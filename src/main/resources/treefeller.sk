@@ -1,0 +1,82 @@
+function chain(b: block, n: integer):
+    wait 1 tick
+    if {_n} is less than 50:
+        add 1 to {_n}
+        set {durabilityless} to {_n}
+        loop blocks in radius 3 around {_b}:
+            if loop-block is any log or crimson_stem or warped_stem:
+                if metadata value "placedLog" of loop-block is not set:
+                    loop blocks above loop-block:
+                        if loop-block-2 is air:
+                            block above loop-block-2 is air
+                            exit 1 loop
+                        exit 1 loop
+                    loop blocks above loop-block:
+                        if loop-block-2 is any leaves or nether_wart_block or warped_wart_block:
+                            chain(loop-block-1, {_n})
+                            break loop-block-1
+                            wait 10 ticks
+
+on place of any log or crimson_stem or warped_stem:
+    set metadata value "placedLog" of event-block to true
+
+on break of any log or crimson_stem or warped_stem:
+    if player has permission "break.log":  # Check for permission
+        if player's gamemode is survival:
+            if player's tool is an axe:
+                if player is sneaking:  # Check if the player is holding shift
+                    stop  # Stop the script if the player is sneaking
+                if metadata value "placedLog" of event-block is not set:
+                    loop blocks above event-block:
+                        set {_l} to 0
+                        if loop-block is any leaves or nether_wart_block or warped_wart_block:
+                            loop all blocks in radius 2 of loop-block:
+                                if loop-block-2 is any leaves or nether_wart_block or warped_wart_block:
+                                    add 1 to {_l}
+                            if {_l} > 7:
+                                set {_tree} to true
+                    if {_tree} is true:
+                        chain(event-block, 0)
+                        plantSapling(event-block)
+    
+                        # Handle durability
+                        set {_durability::%player%} to durability of player's tool
+                        if {_durability::%player%} >= 1:
+                            if level of unbreaking of player's tool is equal to 1:
+                                set durability of player's tool to {_durability::%player%} - {durabilityless} * 4
+                            if level of unbreaking of player's tool is equal to 2:
+                                set durability of player's tool to {_durability::%player%} - {durabilityless} * 2
+                            if level of unbreaking of player's tool is equal to 3:
+                                set durability of player's tool to {_durability::%player%} - {durabilityless} * 1
+                            else:
+                                set durability of player's tool to {_durability::%player%} - {durabilityless} * 8
+                        else:
+                            delete player's tool
+                            play sound "entity.item.break" with volume 1 to player
+
+function plantSapling(b: block):
+    loop blocks below {_b}:
+        if loop-block is not any log or crimson_stem or warped_stem:
+            if loop-block is dirt or grass_block or podzol or coarse_dirt or mycelium or soul_soil or warped_nylium or crimson_nylium:
+                set {_lowestLog} to block above loop-block
+                exit loop
+            else:
+                exit loop
+    if {_lowestLog} is oak log:
+        set block at {_lowestLog} to oak sapling
+    else if {_lowestLog} is spruce log:
+        set block at {_lowestLog} to spruce sapling
+    else if {_lowestLog} is birch log:
+        set block at {_lowestLog} to birch sapling
+    else if {_lowestLog} is jungle log:
+        set block at {_lowestLog} to jungle sapling
+    else if {_lowestLog} is acacia log:
+        set block at {_lowestLog} to acacia sapling
+    else if {_lowestLog} is dark oak log:
+        set block at {_lowestLog} to dark oak sapling
+    else if {_lowestLog} is cherry log:
+        set block at {_lowestLog} to cherry sapling
+    else if {_lowestLog} is crimson stem:
+        set block at {_lowestLog} to crimson fungus
+    else if {_lowestLog} is warped stem:
+        set block at {_lowestLog} to warped fungus
